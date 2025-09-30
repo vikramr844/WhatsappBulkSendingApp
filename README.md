@@ -1,0 +1,2 @@
+# WhatsappBulkSendingApp
+Desktop based Application
