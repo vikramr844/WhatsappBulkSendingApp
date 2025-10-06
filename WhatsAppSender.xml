@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>gui</headerType>
+  <jar>D:\VIKRAM\WhatsApp App\whatsApp.jar</jar>
+  <outfile>D:\VIKRAM\WhatsApp App\WhatsAppSender.exe</outfile>
+  <errTitle></errTitle>
+  <cmdLine></cmdLine>
+  <chdir>.</chdir>
+  <priority>normal</priority>
+  <downloadUrl></downloadUrl>
+  <supportUrl></supportUrl>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <manifest></manifest>
+  <icon>C:\Users\CADDAM\Downloads\whatsapp_socialnetwork_17360.ico</icon>
+  <classPath>
+    <mainClass>com.smsapp.WhatsAppSender</mainClass>
+  </classPath>
+  <jre>
+    <path>%EXEDIR%\jre</path>
+    <requiresJdk>false</requiresJdk>
+    <requires64Bit>false</requires64Bit>
+    <minVersion>17</minVersion>
+    <maxVersion></maxVersion>
+  </jre>
+</launch4jConfig>
