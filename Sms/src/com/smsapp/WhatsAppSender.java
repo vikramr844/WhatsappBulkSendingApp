@@ -21,9 +21,14 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.poi.ss.usermodel.*;
+
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 
 public class WhatsAppSender extends JFrame {
     // Colors
@@ -773,7 +778,7 @@ public class WhatsAppSender extends JFrame {
         if (includeImageCheckbox.isSelected()) {
             log("Including images with messages");
         }
-        log("Estimated completion: " + (birthdayEmployees.size() * 10) + " seconds");
+        log("Estimated completion: " + (birthdayEmployees.size() * 5) + " seconds");
 
         executorService.execute(() -> {
             for (int i = 0; i < birthdayEmployees.size(); i++) {
@@ -784,7 +789,7 @@ public class WhatsAppSender extends JFrame {
                 
                 if (i < birthdayEmployees.size() - 1) {
                     try {
-                        Thread.sleep(10000); // 10 seconds delay
+                        Thread.sleep(1000); // 10 seconds delay
                     } catch (InterruptedException e) { break; }
                 }
             }
@@ -807,7 +812,7 @@ public class WhatsAppSender extends JFrame {
         });
     }
 
-    private void sendBirthdayMessage(Employee employee, int current, int total) {
+private void sendBirthdayMessage(Employee employee, int current, int total) {
         try {
             String instanceId = instanceIdField.getText().trim();
             String token = apiTokenField.getText().trim();
@@ -890,14 +895,40 @@ public class WhatsAppSender extends JFrame {
             }
 
             log("Using local image file: " + imageFile.getName());
-            
-            return sendImageAsDocument(instanceId, token, phone, caption, imageFile);
-            
+
+            // Read file as Base64
+            byte[] fileContent = Files.readAllBytes(imageFile.toPath());
+            String base64Image = Base64.getEncoder().encodeToString(fileContent);
+
+            // Get MIME type and extension
+            String fileName = imageFile.getName();
+            String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+            String mimeType = getMimeType(extension);
+
+            // ✅ Use /messages/image endpoint instead of /messages/document
+            String url = "https://api.ultramsg.com/instance" + instanceId + "/messages/image";
+            String postData = "token=" + URLEncoder.encode(token, "UTF-8") +
+                            "&to=" + URLEncoder.encode(phone, "UTF-8") +
+                            "&caption=" + URLEncoder.encode(caption, "UTF-8") +
+                            "&image=" + URLEncoder.encode("data:" + mimeType + ";base64," + base64Image, "UTF-8");
+
+            String result = sendPostRequest(url, postData);
+
+            if (isSuccessResponse(result)) {
+                log("✅ Image sent successfully as visible image");
+                return true;
+            } else {
+                log("❌ Image send failed: " + result);
+                return false;
+            }
+
         } catch (Exception ex) {
-            log("Image upload error: " + ex.getMessage());
+            log("⚠️ Image upload error: " + ex.getMessage());
             return false;
         }
     }
+
+
 
     private boolean sendImageAsDocument(String instanceId, String token, String phone, String caption, File imageFile) {
         try {
@@ -908,7 +939,9 @@ public class WhatsAppSender extends JFrame {
             String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
             String mimeType = getMimeType(extension);
             
-            String url = "https://api.ultramsg.com/instance" + instanceId + "/messages/document";
+
+            //String url = "https://api.ultramsg.com/instance" + instanceId + "/messages/image";
+            String url="https://api.ultramsg.com/instance" + instanceId + "/messages/image?token=" + URLEncoder.encode(token, "UTF-8");
             String postData = "token=" + URLEncoder.encode(token, "UTF-8") +
                             "&to=" + URLEncoder.encode(phone, "UTF-8") +
                             "&filename=" + URLEncoder.encode("birthday." + extension, "UTF-8") +
